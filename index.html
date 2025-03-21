@@ -18,8 +18,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
     <script>
         const video = document.getElementById('videoElement');
+        const resultsDiv = document.getElementById('results');
 
-        // Verificar que getUserMedia es soportado
+        // Iniciar el stream de la cámara trasera
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({ 
                 video: { facingMode: { ideal: "environment" } } 
@@ -34,6 +35,24 @@
         } else {
             console.error("getUserMedia no es soportado en este navegador.");
         }
+
+        // Cargar el modelo MobileNet a través de TensorFlow.js
+        mobilenet.load().then(model => {
+            console.log("Modelo MobileNet cargado correctamente");
+
+            // Clasifica la imagen del video cada 1 segundo
+            setInterval(() => {
+                model.classify(video).then(predictions => {
+                    if (predictions && predictions.length > 0) {
+                        resultsDiv.innerHTML = `
+                            <p><strong>Predicción:</strong> ${predictions[0].className}</p>
+                            <p><strong>Probabilidad:</strong> ${predictions[0].probability.toFixed(4)}</p>
+                        `;
+                        console.log(predictions);
+                    }
+                });
+            }, 1000);
+        });
     </script>
 </body>
 </html>
